@@ -61,6 +61,37 @@
 #define NOT_MAIN 0
 #endif
 
+#include <Windows.h>
+//#include <string>
+//#include <vector>
+
+// Function to convert const char* to LPCWSTR
+LPCWSTR ConvertCharToLPCWSTR(const char* ansiString, UINT CodePage) {
+    if (!ansiString) {
+        return NULL; // Handle null input
+    }
+
+    // Determine the required buffer size for the wide character string
+    int wideCharLen = MultiByteToWideChar(CodePage, 0, ansiString, -1, NULL, 0);
+
+    if (wideCharLen == 0) {
+        return NULL; // Error in conversion or empty string
+    }
+
+    // Allocate memory for the wide character string
+    // Use a smart pointer or std::vector for automatic memory management
+    // For simplicity, using raw new/delete here, but be mindful of memory leaks
+    wchar_t* wideCharBuffer = malloc(wideCharLen * sizeof(wchar_t));
+
+    // Perform the conversion
+    MultiByteToWideChar(CodePage, 0, ansiString, -1, wideCharBuffer, wideCharLen);
+
+    // Note: The caller is responsible for deleting wideCharBuffer
+    // when it is no longer needed to prevent memory leaks.
+    // For example: delete[] wideCharBuffer;
+    return wideCharBuffer;
+}
+
 /* Combines xd3_strerror() and strerror() */
 const char* xd3_mainerror(int err_num);
 
@@ -889,7 +920,8 @@ main_file_open (main_file *xfile, const char* name, int mode)
     }
 
 #elif XD3_WIN32
-  xfile->file = CreateFile(name,
+  LPCWSTR wname_utf8 = ConvertCharToLPCWSTR(name, CP_UTF8);
+  xfile->file = CreateFile(wname_utf8,
 			   (mode == XO_READ) ? GENERIC_READ : GENERIC_WRITE,
 			   FILE_SHARE_READ,
 			   NULL,
@@ -898,6 +930,7 @@ main_file_open (main_file *xfile, const char* name, int mode)
 			   (option_force ? CREATE_ALWAYS : CREATE_NEW),
 			   FILE_ATTRIBUTE_NORMAL,
 			   NULL);
+  free((void*)wname_utf8);
   if (xfile->file == INVALID_HANDLE_VALUE)
     {
       ret = get_errno ();

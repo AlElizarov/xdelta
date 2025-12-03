@@ -41,6 +41,7 @@ add_compile_definitions(XD3_USE_LARGESIZET=1)
 if(WIN32)
     add_compile_definitions(XD3_WIN32=1) #this forces using the win32 io library
     add_compile_definitions(WIN32=1)
+    add_compile_definitions(UNICODE=1)
 else()
     add_compile_definitions(XD3_WIN32=0)
     add_compile_definitions(WIN32=0)

@@ -45,14 +45,12 @@ int xd3_main_exec_with_progress(
 
     wrapper_progress_func = &wrapper_report_progress;
 
-    _messages.clear();
-    xprintf_message_func = &internal_printf;
-
     char** argv = new char*[params.size() + 2];
     argv[0] = new char[8]{'x', 'd', 'e', 'l', 't', 'a', '3', '\0'};
 
     int count = 1;
-    for (const auto& entry : params) {
+    for (const auto& entry : params)
+    {
         size_t len = entry.length() + 1;
         argv[count] = new char[len];
         std::copy(entry.begin(), entry.end(), argv[count]);
@@ -60,11 +58,15 @@ int xd3_main_exec_with_progress(
         count++;
     }
     argv[count] = nullptr;
+    
+    xprintf_message_func = &internal_printf;
+    _messages.clear();
 
     int ret = xd3_main_cmdline(count, argv);
 
     xprintf_message_func = nullptr;
-    for (int i = 0; i <= count; i++) {
+    for (int i = 0; i <= count; i++)
+    {
         delete[] argv[i];
     }
     delete[] argv;

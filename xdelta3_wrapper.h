@@ -3,7 +3,9 @@
 
 #include <string>
 #include <vector>
+#include <functional>
 
+using ProgressCallbackFunction = std::function<void(const std::string&, uint64_t)>;
 
 /**
  * C++ like command line interface. Parameters are passed with a map, where the key
@@ -13,6 +15,12 @@
  **/
 
 int xd3_main_exec(const std::vector<std::string>& params);
+
+int xd3_main_exec_with_progress(
+    const std::vector<std::string>& params,
+    ProgressCallbackFunction progressCallback
+);
+
 std::string xd3_messages();
 
 #endif

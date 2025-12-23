@@ -3251,6 +3251,12 @@ main_input (xd3_cmd     cmd,
 #endif
       xd3_avail_input (& stream, main_bdata, nread);
 
+      extern void (*wrapper_progress_func)(const char*, uint64_t);
+
+      if (wrapper_progress_func && nread > 0) {
+          wrapper_progress_func(ifile->filename ? ifile->filename : "data", nread);
+      }
+
       /* If we read zero bytes after encoding at least one window... */
       if (nread == 0 && stream.current_window > 0) {
 	break;

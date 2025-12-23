@@ -13,24 +13,43 @@ extern "C"
 }
 
 
-static std::string _messages;
-static void internal_printf(const char* msg) {
-    _messages.append(msg);
+namespace {
+    std::string _messages;
+    void internal_printf(const char* msg) {
+        _messages.append(msg);
+    }
+
+    ProgressCallbackFunction g_progress_callback = nullptr;
 }
 
+extern "C" {
+    void wrapper_report_progress(const char* filename, uint64_t bytes) {
+        if (g_progress_callback) {
+            g_progress_callback(std::string(filename), bytes);
+        }
+    }
+
+    void (*wrapper_progress_func)(const char*, uint64_t) = nullptr;
+}
 
 std::string xd3_messages()
 {
     return _messages;
 }
 
-int xd3_main_exec(const std::vector<std::string>& params)
+int xd3_main_exec_with_progress(
+    const std::vector<std::string>& params,
+    ProgressCallbackFunction progressCallback)
 {
-    char** argv = new char* [params.size() + 2];
-    argv[0] = new char[8] {'x', 'd', 'e', 'l', 't', 'a', '3', '\0'};
+    g_progress_callback = std::move(progressCallback);
+
+    wrapper_progress_func = &wrapper_report_progress;
+
+    char** argv = new char*[params.size() + 2];
+    argv[0] = new char[8]{'x', 'd', 'e', 'l', 't', 'a', '3', '\0'};
 
     int count = 1;
-    for (auto& entry : params)
+    for (const auto& entry : params)
     {
         size_t len = entry.length() + 1;
         argv[count] = new char[len];
@@ -38,9 +57,8 @@ int xd3_main_exec(const std::vector<std::string>& params)
         argv[count][len - 1] = '\0';
         count++;
     }
-
     argv[count] = nullptr;
-
+    
     xprintf_message_func = &internal_printf;
     _messages.clear();
 
@@ -52,5 +70,13 @@ int xd3_main_exec(const std::vector<std::string>& params)
         delete[] argv[i];
     }
     delete[] argv;
+
+    g_progress_callback = nullptr;
+    wrapper_progress_func = nullptr;
+
     return ret;
+}
+
+int xd3_main_exec(const std::vector<std::string>& params) {
+    return xd3_main_exec_with_progress(params, nullptr);
 }

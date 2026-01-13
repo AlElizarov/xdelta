@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <cstdint>
 #include <functional>
 
 using ProgressCallbackFunction = std::function<void(const std::string&, uint64_t)>;

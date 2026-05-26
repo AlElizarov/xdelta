@@ -61,7 +61,9 @@
 #define NOT_MAIN 0
 #endif
 
+#if XD3_WIN32
 #include <Windows.h>
+
 //#include <string>
 //#include <vector>
 
@@ -91,6 +93,8 @@ LPCWSTR ConvertCharToLPCWSTR(const char* ansiString, UINT CodePage) {
     // For example: delete[] wideCharBuffer;
     return wideCharBuffer;
 }
+
+#endif
 
 /* Combines xd3_strerror() and strerror() */
 const char* xd3_mainerror(int err_num);
